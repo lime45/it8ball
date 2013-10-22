@@ -42,7 +42,7 @@ def provide_insight():
             "Outlook not so good",
             "Very doubtful",
         ]
-  answer_key = randint(1,20)
+  answer_key = randint(0,19)
   sendmsg(channel, answer_array[answer_key] + "\n")
 
 def report_lex_weather():
