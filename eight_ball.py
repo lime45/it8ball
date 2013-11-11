@@ -44,7 +44,7 @@ def provide_insight():
             "Please reboot your machine",
             "Add more RAM",
         ]
-  answer_key = randint(0,21)
+  answer_key = randint(0,(len(answer_array)-1))
   sendmsg(channel, answer_array[answer_key] + "\n")
 
 def report_lex_weather():
