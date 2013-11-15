@@ -3,13 +3,22 @@ import socket
 import pywapi
 import sys
 import string
+import aiml
+from PyGtalkRobot import GtalkRobot
 from random import randint
 from random import choice
+
+#stuff from ai library
+k = aiml.Kernel()
+k.learn("std-startup.xml")
+k.respond("load aiml b")
+
 
 def ping(): 
   ircsock.send("PONG :pingis\n")  
 
-def sendmsg(chan , msg): 
+def sendmsg(chan , msg):
+  print("I say " + msg)
   ircsock.send("PRIVMSG "+ chan +" :"+ msg +"\n") 
 
 def joinchan(chan):
@@ -64,6 +73,12 @@ def online_help(recipient):
   sendmsg(recipient, "\"eight: <question>\" for a yes/no response.\n")
   sendmsg(recipient, "\"weather:\" for a quick Lexington weather summary.\n")
   sendmsg(recipient, "\"hollister: <problem>\" for a hollister solution to your problem.\n")
+
+def chatty_mc_chatterson(recipient, msg):
+  response = k.respond(raw_message)
+  sendmsg(recipient, response) 
+
+###################################################################################
                   
 if len(sys.argv) != 4:
   print "Usage: eight_ball <server[:port]> <channel> <nickname>"
@@ -89,16 +104,21 @@ ircsock.send("NICK "+ botnick +"\n")
 
 joinchan(channel)
 
+
 while 1:
   ircmsg = ircsock.recv(2048) # receive data from the server
   ircmsg = ircmsg.strip('\n\r') # removing any unnecessary linebreaks.
-  print(ircmsg) # Here we print what's coming from the server
   sender_nick = ircmsg.split(" ")
   sender_nick = sender_nick[0]
   sender_nick = sender_nick.split("!")
   sender_nick = sender_nick[0]
   sender_nick = sender_nick.strip(":")
+  raw_message = ircmsg.split(":")
+  if (len(raw_message) == 3):
+    raw_message = raw_message[2]
+    print (sender_nick + ": " + raw_message)
 
+  
   if ircmsg.find("PRIVMSG "+ botnick) != -1:
     sendto = sender_nick
   else:
@@ -107,14 +127,17 @@ while 1:
   if ircmsg.find(":hollister:") != -1:
     provide_hollister_insight(sendto)
 
-  if ircmsg.find(":eight:") != -1:
+  elif ircmsg.find(":eight:") != -1:
     provide_yesno(sendto)
 
-  if ircmsg.find(":eighthelp:") != -1:
+  elif ircmsg.find(":eighthelp:") != -1:
     online_help(sendto)
 
-  if ircmsg.find(":weather:") != -1:
+  elif ircmsg.find(":weather:") != -1:
     report_lex_weather(sendto)
+
+  elif (sendto == sender_nick):
+    chatty_mc_chatterson(sendto, raw_message)
 
   if ircmsg.find("PING :") != -1:
     ping()
