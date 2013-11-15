@@ -15,7 +15,7 @@ def sendmsg(chan , msg):
 def joinchan(chan):
   ircsock.send("JOIN "+ chan +"\n")
 
-def provide_yesno():
+def provide_yesno(recipient):
   yesno_array = [
             "It is certain",
             "It is decidedly so",
@@ -39,9 +39,9 @@ def provide_yesno():
             "Very doubtful",
         ]
   answer_key = randint(1,(len(yesno_array) - 1))
-  sendmsg(channel, yesno_array[answer_key] + "\n")
+  sendmsg(recipient, yesno_array[answer_key] + "\n")
 
-def provide_hollister_insight():
+def provide_hollister_insight(recipient):
   hollister_array = [
             "Please reboot your machine",
             "Add more RAM",
@@ -53,17 +53,17 @@ def provide_hollister_insight():
             "server cluster will be rebooted at 3pm, it will probably work then",
         ]
   answer_key = randint(1,(len(hollister_array) - 1))
-  sendmsg(channel, hollister_array[answer_key] + "\n")
+  sendmsg(recipient, hollister_array[answer_key] + "\n")
 
-def report_lex_weather():
+def report_lex_weather(recipient):
   weather_result = pywapi.get_weather_from_yahoo('40513',units = 'imperial')
-  sendmsg(channel, "It is " + string.lower(weather_result['condition']['text']) + " and " + weather_result['condition']['temp'] + "F now in Lexington.\n")
+  sendmsg(recipient, "It is " + string.lower(weather_result['condition']['text']) + " and " + weather_result['condition']['temp'] + "F now in Lexington.\n")
 
-def online_help():
-  sendmsg(channel, "\"eighthelp:\" for this help message.\n")
-  sendmsg(channel, "\"eight: <question>\" for a yes/no response.\n")
-  sendmsg(channel, "\"weather:\" for a quick Lexington weather summary.\n")
-  sendmsg(channel, "\"hollister: <problem>\" for a hollister solution to your problem.\n")
+def online_help(recipient):
+  sendmsg(recipient, "\"eighthelp:\" for this help message.\n")
+  sendmsg(recipient, "\"eight: <question>\" for a yes/no response.\n")
+  sendmsg(recipient, "\"weather:\" for a quick Lexington weather summary.\n")
+  sendmsg(recipient, "\"hollister: <problem>\" for a hollister solution to your problem.\n")
                   
 if len(sys.argv) != 4:
   print "Usage: eight_ball <server[:port]> <channel> <nickname>"
@@ -98,18 +98,23 @@ while 1:
   sender_nick = sender_nick.split("!")
   sender_nick = sender_nick[0]
   sender_nick = sender_nick.strip(":")
- 
+
+  if ircmsg.find("PRIVMSG "+ botnick) != -1:
+    sendto = sender_nick
+  else:
+    sendto = channel
+
   if ircmsg.find(":hollister:") != -1:
-    provide_hollister_insight()
+    provide_hollister_insight(sendto)
 
   if ircmsg.find(":eight:") != -1:
-    provide_yesno()
+    provide_yesno(sendto)
 
   if ircmsg.find(":eighthelp:") != -1:
-    online_help()
+    online_help(sendto)
 
   if ircmsg.find(":weather:") != -1:
-    report_lex_weather()
+    report_lex_weather(sendto)
 
   if ircmsg.find("PING :") != -1:
     ping()
